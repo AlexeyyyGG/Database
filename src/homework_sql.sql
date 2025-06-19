@@ -198,9 +198,7 @@ SELECT o.*,
        s.SNAME AS SellerName
 FROM ORDERS o
          LEFT JOIN CUSTOMERS c ON o.CNUM = c.CNUM
-         LEFT JOIN SELLERS s ON o.SNUM = s.SNUM
-WHERE s.SNUM IS null
-   OR c.CNUM is null;
+         LEFT JOIN SELLERS s ON o.SNUM = s.SNUM;
 
 -- 5) Вывести полную информацию о продавцах и заказах, если продавец не не имеет заказов, вывести null
 SELECT s.*, o.*
@@ -221,7 +219,7 @@ SELECT DISTINCT o1.CNUM,
                 o2.CNUM,
                 o1.ODATE
 FROM ORDERS o1
-         JOIN ORDERS o2 ON o1.ODATE = o2.ODATE AND o1.CNUM < o2.CNUM;
+JOIN ORDERS o2 ON o1.ODATE = o2.ODATE AND o1.CNUM < o2.CNUM;
 
 -- 8) Вывести строки с минимальными и максимальными суммами заказов и именем покупателя, столбцом указывающем самая высокая или низкая сумма
 SELECT MIN(o.AMT) AS Минимальный_заказ,
@@ -289,11 +287,15 @@ WHERE c.RATING = 200;
 DELETE t
 FROM TMPDATA t
          JOIN CUSTOMERS c ON t.CNUM = c.CNUM
-WHERE c.CNAME LIKE 'Peel';
+WHERE c.CNAME = 'Peel';
 
 -- 18) Вставить в таблицу TMPDATA все заказы продавцов которые имеют комисионные ниже чем средние комисионные продавцов имеющих заказы
 INSERT INTO TMPDATA (CNUM, SNUM, ODATE, AMT)
 SELECT o.CNUM, o.SNUM, o.ODATE, o.AMT
 FROM ORDERS o
          JOIN SELLERS s ON o.SNUM = s.SNUM
-WHERE s.COMM < (SELECT AVG(COMM) FROM SELLERS);
+WHERE s.COMM < (
+    SELECT AVG(COMM)
+    FROM SELLERS s2
+    JOIN ORDERS o2 ON o2.SNUM = s2.SNUM
+);
